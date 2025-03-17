@@ -2,6 +2,7 @@ import requests
 import argparse
 import json
 from InquirerPy import inquirer
+from InquirerPy.base.control import Choice
 from links import ISOS
 
 CONFIG_FILENAME = ".iso-usbupdater.config"
@@ -22,18 +23,16 @@ def main():
         with open(f"{args.path}/{CONFIG_FILENAME}") as f:
             config = json.loads(f.read())
     except FileNotFoundError:
-        print("no config file found, starting configurator")
-        args.configure = True
+        print("no config file found")
 
-    if args.configure:
+    while args.configure:
         iso_choices = []
         if config:
             for iso in config:
                 iso_choices.append(iso["name"])
         # add option to add new iso
         iso_choices.append("Add new ISO")
-        for iso in ISOS:
-            iso_choices.append(iso)
+        iso_choices.append("Exit and Save")
         iso_selected = inquirer.select(
             message="Choose an ISO to add",
             choices=iso_choices,
@@ -42,7 +41,7 @@ def main():
         if iso_selected == "Add new ISO":
             iso_selected = inquirer.select(
                 message="Choose an ISO to add",
-                choices=ISOS.keys(),
+                choices=[iso for iso in ISOS if iso not in config],
                 multiselect=False,
             ).execute()
             # ask which architecture to add
@@ -55,21 +54,47 @@ def main():
                 multiselect=True,
             ).execute()
             # add selected iso to config
-            config.append(
-                {
-                    "name": iso_selected,
-                    "arch": arch_selected,
-                }
-            )
-            
+            config[iso_selected] = {
+                "name": iso_selected,
+                "archs": arch_selected,
+            }
+
         # configured iso selected
-        else:
-            
-            
-            
-        for iso in iso_selected:
-            print(f"Downloading {iso}")
-            download_iso(ISOS[iso]["links"]["amd64"])
+        elif iso_selected in ISOS:
+            # ask what shall be done
+            action_selected = inquirer.select(
+                message="What shall be done?",
+                choices=["Remove", "Edit Architectures"],
+                multiselect=False,
+            ).execute()
+            if action_selected == "Remove":
+                config.pop(iso_selected)
+            elif action_selected == "Edit Architectures":
+                arch_choices = []
+                for arch in ISOS[iso_selected]["links"]:
+                    arch_choices.append(arch)
+                arch_selected = inquirer.select(
+                    message="Choose which architectures to add",
+                    choices=arch_choices,
+                    multiselect=True,
+                ).execute()
+                # add selected iso to config
+                config.append(
+                    {
+                        "name": iso_selected,
+                        "arch": arch_selected,
+                    }
+                )
+            elif action_selected == "Exit and Save":
+                write_config(config, args.path)
+                return
+            else:
+                print("Invalid Option")
+
+    # download isos
+    for iso in iso_selected:
+        print(f"Downloading {iso}")
+        download_iso(ISOS[iso]["links"]["amd64"])
 
 
 def download_iso(url):
