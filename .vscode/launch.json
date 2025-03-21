@@ -22,7 +22,7 @@
             "console": "integratedTerminal",
             "args": [
                 "--configure",
-                "."
+                "test"
             ]
         },
         {

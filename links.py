@@ -62,6 +62,7 @@ ISOS = {
         "name": "",
         "os": "linux",
         "link": "https://www.archlinux.org/download/",
+        "checksums": "https://archlinux.org/iso/RELEASE/sha256sums.txt",
         "mirrorlist": "",
     },
     "fedora_workstation": {

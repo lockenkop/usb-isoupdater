@@ -1,9 +1,11 @@
 import requests
 import argparse
 import json
+import re
+import os
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
-from links import ISOS
+from distros import distros
 
 CONFIG_FILENAME = ".iso-usbupdater.config"
 
@@ -28,73 +30,97 @@ def main():
     while args.configure:
         iso_choices = []
         if config:
+            configured_isos = []
+            iso_choices.append("Edit configured ISOs")
             for iso in config:
-                iso_choices.append(iso["name"])
-        # add option to add new iso
+                configured_isos.append(iso)
         iso_choices.append("Add new ISO")
         iso_choices.append("Exit and Save")
-        iso_selected = inquirer.select(
-            message="Choose an ISO to add",
+        main_menu_selection = inquirer.select(
+            message="Main Menu",
             choices=iso_choices,
             multiselect=False,
         ).execute()
-        if iso_selected == "Add new ISO":
-            iso_selected = inquirer.select(
+        if main_menu_selection == "Add new ISO":
+            os.system("clear")
+            # ask which distro to add
+            distro_selection = inquirer.select(
                 message="Choose an ISO to add",
-                choices=[iso for iso in ISOS if iso not in config],
+                # build a list of all available isos in distros.py
+                choices=[
+                    Choice(value=iso, name=iso.NAME) for iso in distros.DISTROLIST
+                ],
                 multiselect=False,
             ).execute()
             # ask which architecture to add
-            arch_choices = []
-            for arch in ISOS[iso_selected]["links"]:
-                arch_choices.append(arch)
+            arch_choices = [arch for arch in distro_selection.ARCHS]
+            os.system("clear")
             arch_selected = inquirer.select(
                 message="Choose which architectures to add",
                 choices=arch_choices,
                 multiselect=True,
             ).execute()
             # add selected iso to config
-            config[iso_selected] = {
-                "name": iso_selected,
+            config[distro_selection.NAME] = {
+                "name": main_menu_selection,
                 "archs": arch_selected,
             }
-
         # configured iso selected
-        elif iso_selected in ISOS:
-            # ask what shall be done
-            action_selected = inquirer.select(
-                message="What shall be done?",
-                choices=["Remove", "Edit Architectures"],
+        elif main_menu_selection == "Edit configured ISOs":
+            os.system("clear")
+            edit_iso_selection = inquirer.select(
+                message="Choose an ISO to edit",
+                choices=[iso for iso in config],
                 multiselect=False,
             ).execute()
-            if action_selected == "Remove":
-                config.pop(iso_selected)
-            elif action_selected == "Edit Architectures":
-                arch_choices = []
-                for arch in ISOS[iso_selected]["links"]:
-                    arch_choices.append(arch)
-                arch_selected = inquirer.select(
-                    message="Choose which architectures to add",
-                    choices=arch_choices,
-                    multiselect=True,
+            if edit_iso_selection in ISOS:
+                # ask what shall be done
+                action_selected = inquirer.select(
+                    message="What shall be done?",
+                    choices=["Remove", "Edit Architectures"],
+                    multiselect=False,
                 ).execute()
-                # add selected iso to config
-                config.append(
-                    {
-                        "name": iso_selected,
-                        "arch": arch_selected,
-                    }
-                )
-            elif action_selected == "Exit and Save":
-                write_config(config, args.path)
-                return
+                if action_selected == "Remove":
+                    config.pop(edit_iso_selection)
+                elif action_selected == "Edit Architectures":
+                    arch_choices = []
+                    for arch in ISOS[edit_iso_selection]["links"]:
+                        arch_choices.append(arch)
+                    os.system("clear")
+                    arch_selected = inquirer.select(
+                        message="Choose which architectures to add",
+                        choices=arch_choices,
+                        multiselect=True,
+                    ).execute()
+                    # add selected iso to config
+                    config.update(
+                        {
+                            "name": edit_iso_selection,
+                            "arch": arch_selected,
+                        }
+                    )
+
+                else:
+                    print("Invalid action")
             else:
-                print("Invalid Option")
+                print("Invalid Option, ISO is not configured")
+        elif main_menu_selection == "Exit and Save":
+            write_config(config, args.path)
+            args.configure = False
+        else:
+            print("Invalid Option")
 
     # download isos
-    for iso in iso_selected:
+    for iso in config:
         print(f"Downloading {iso}")
-        download_iso(ISOS[iso]["links"]["amd64"])
+        for arch in config[iso]["archs"]:
+            print(f"Downloading {iso} {arch}")
+            download_iso(ISOS[iso]["links"][arch])
+
+
+def download_checksums(sha256_url):
+    r = requests.get(sha256_url)
+    return r.text
 
 
 def download_iso(url):
@@ -108,7 +134,7 @@ def download_iso(url):
 
 
 def write_config(config, path):
-    with open(f"{path}/.{CONFIG_FILENAME}", "w") as f:
+    with open(f"{path}/{CONFIG_FILENAME}", "w") as f:
         f.write(json.dumps(config))
 
 
