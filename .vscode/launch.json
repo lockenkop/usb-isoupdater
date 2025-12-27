@@ -8,7 +8,7 @@
             "name": "Python Debugger: local run",
             "type": "debugpy",
             "request": "launch",
-            "program": "${file}",
+            "program": "${workspaceFolder}/usb_isoupdater/main.py",
             "console": "integratedTerminal",
             "args": [
                 "."
@@ -18,7 +18,7 @@
             "name": "Python Debugger: local configure",
             "type": "debugpy",
             "request": "launch",
-            "program": "${file}",
+            "program": "${workspaceFolder}/usb_isoupdater/main.py",
             "console": "integratedTerminal",
             "args": [
                 "--configure",

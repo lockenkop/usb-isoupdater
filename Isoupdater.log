@@ -738,3 +738,107 @@ INFO:distros:checksum correct
 INFO:root:Ubuntu amd64 is up to date
 INFO:__main__:Checking PopOS
 ERROR:distros:Failed to get sha256sum for PopOS
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:__main__:Exiting and saving configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='.', configure=False)
+INFO:root:no configure flag found, updating
+INFO:root:starting with args: Namespace(path='.', configure=False)
+INFO:root:no configure flag found, updating
+INFO:root:starting with args: Namespace(path='./test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:__main__:Exiting and saving configuration
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:__main__:Exiting and saving configuration
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:__main__:Exiting and saving configuration
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:Found USB device: /dev/sda1
+INFO:root:Found USB device: /dev/sda2
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:Found USB device: /dev/sda1
+INFO:root:Found USB device: /dev/sda2
+INFO:root:Found USB device: /dev/sda1
+INFO:root:Found USB device: /dev/sda2
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:Found USB device: /dev/sda1
+INFO:root:Found USB device: /dev/sda2
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:Found USB device: /dev/sda1
+INFO:root:Found USB device: /dev/sda2
+INFO:__main__:Exiting and saving configuration
+INFO:root:starting with args: Namespace(path='test', configure=True)
+INFO:root:configure flag found, starting configuration
+INFO:root:Found USB device: /dev/sda1
+INFO:root:Found USB device: /dev/sda2

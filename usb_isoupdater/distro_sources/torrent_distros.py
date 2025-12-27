@@ -1,10 +1,10 @@
-from defusedxml import ElementTree as ET
-import requests
 import feedparser
+import requests
 from bs4 import BeautifulSoup
+from distro_base import Distro
 
 
-class TorrentDistro:
+class TorrentDistro(Distro):
     def __init__(self, name: str, torrent_url: str, arch):
         self.name = name
         self.torrent_url = torrent_url
@@ -23,9 +23,7 @@ def get_distros_from_distrowatch() -> list[TorrentDistro]:
     url = "https://distrowatch.com/dwres.php?resource=bittorrent"
     response = requests.get(
         url,
-        headers={
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0"
-        },
+        headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0"},
     )
     response.raise_for_status()  # Raise an error for bad responses
     soup = BeautifulSoup(response.text, "html.parser")
