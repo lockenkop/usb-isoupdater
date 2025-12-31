@@ -45,7 +45,7 @@ class Distro:
         downloader.download()
 
     def get_checksums(self):
-        r = requests.get(self.checksum_url)
+        r = requests.get(self.checksum_url, timeout=10)
         lines = r.text.strip().split("\n")
         for line in lines:
             checksum, checksum_filename = line.split()

@@ -23,6 +23,12 @@ SAMPLECONFIG = {
     "Fedora": ["x86_64", "aarch64"],
 }
 
+logging.basicConfig(
+    filename="Isoupdater.log",
+    format="%(asctime)s %(levelname)-8s %(message)s",
+    level=logging.DEBUG,
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 logger = logging.getLogger(__name__)
 
 
@@ -31,7 +37,6 @@ def main():
     parser.add_argument("path", help="Path to your mounted media")
     parser.add_argument("-c", "--configure", help="Configure the updater", action="store_true")
     args = parser.parse_args()
-    logging.basicConfig(filename="Isoupdater.log", level=logging.INFO)
     logging.info(f"starting with args: {args}")
 
     Isoupdater(args)
@@ -43,6 +48,8 @@ class Isoupdater:
         self.configure = args.configure
         self.config: ConfigManager
         self.last_message = ""
+        self.usb_device: pyudev.Device | None = None
+        self.configured_usb_device: dict[str, str] | None = None
         self.config_path = self.path.joinpath(CONFIG_FILENAME)
         self.distro_list = self._get_all_distros()
         # TODO add keybindings support for going back
@@ -64,6 +71,15 @@ class Isoupdater:
             self.config = ConfigManager(self.config_path)
         except FileNotFoundError:
             logging.info(f"no config file found in {self.path}")
+        self.configured_usb_device = self.config.get_usb_device()
+        if self.configured_usb_device:
+            self.connected_usb_device = self._find_configured_usb_device()
+            if self.connected_usb_device:
+                self.last_message = "configured USB device found"
+            else:
+                self.last_message = "configured USB device not connected"
+        else:
+            self.last_message = "no USB device configured"
 
         if self.configure:
             logging.info("configure flag found, starting configuration")
@@ -79,7 +95,7 @@ class Isoupdater:
             if not self.config.get_distros():
                 main_menu_choices.remove("Edit configured ISOs")
             os.system("clear")
-            main_menu_selection = inquirer.select(
+            main_menu_selection = inquirer.select(  # pyright: ignore[reportPrivateImportUsage]
                 message="Main Menu",
                 instruction=self.last_message,
                 choices=main_menu_choices,
@@ -96,7 +112,7 @@ class Isoupdater:
         for device in usb_devices_psutil:
             usb_choices.append(Choice(value=device.device, name=f"{device.device}, mounted at: {device.mountpoint}"))
         usb_choices.append(Choice(value="Back", name="Back"))
-        usb_device_choice = inquirer.select(
+        usb_device_choice = inquirer.select(  # pyright: ignore[reportPrivateImportUsage]
             message="Select your USB device",
             choices=usb_choices,
         ).execute()
@@ -121,7 +137,7 @@ class Isoupdater:
             self.last_message = "All available ISOs are already configured"
             return
         distro_choices.append(Choice(value="Back", name="Back"))
-        self.distro_selection: Distro = inquirer.select(
+        self.distro_selection: Distro = inquirer.select(  # pyright: ignore[reportPrivateImportUsage]
             message="Choose an ISO to add",
             # build a list of all available isos in distros.py
             choices=distro_choices,
@@ -140,7 +156,7 @@ class Isoupdater:
             distro_object = self._get_distro_by_key(distro)
             edit_iso_choices.append(Choice(value=distro_object, name=distro_object.name))
         edit_iso_choices.append(Choice(value="Back", name="Back"))
-        self.edit_iso_selection: Distro = inquirer.select(
+        self.edit_iso_selection: Distro = inquirer.select(  # pyright: ignore[reportPrivateImportUsage]
             message="Choose an ISO to edit",
             choices=edit_iso_choices,
             multiselect=False,
@@ -148,7 +164,7 @@ class Isoupdater:
         if self.edit_iso_selection == "Back":
             return
         # ask what shall be done
-        action_selected = inquirer.select(
+        action_selected = inquirer.select(  # pyright: ignore[reportPrivateImportUsage]
             message="What shall be done?",
             choices=["Remove", "Edit Architectures", "Back"],
             multiselect=False,
@@ -180,7 +196,7 @@ class Isoupdater:
             archs_configured = configured_distros[distro.config_key]
         for arch in arch_choices:
             choices.append(Choice(value=arch, name=arch, enabled=arch in archs_configured))
-        arch_selected = inquirer.select(
+        arch_selected = inquirer.select(  # pyright: ignore[reportPrivateImportUsage]
             message="Choose which architectures to add, spacebar to select multiple, enter to confirm",
             choices=choices,
             multiselect=True,
@@ -229,6 +245,22 @@ class Isoupdater:
 
     def _get_usb_devices_psutil(self) -> list["sdiskpart"]:
         return psutil.disk_partitions()
+
+    def _find_configured_usb_device(self) -> pyudev.Device | None:
+        usb_devices = self._get_usb_devices_udev()
+        for device in usb_devices:
+            if (
+                # devicepath can change, so we check only vendor and model id
+                # device.device_node == self.configured_usb_device["devicepath"]
+                device.get("ID_VENDOR_ID") == self.configured_usb_device["vendorid"]
+                and device.get("ID_MODEL_ID") == self.configured_usb_device["modelid"]
+            ):
+                logging.info(f"Configured USB device found: {device.device_node}")
+                return device
+
+        logging.warning("Configured USB device not found")
+        self.last_message = "Configured USB device not found"
+        return None
 
     def _check_iso_present(self, distro: Distro) -> bool:
         if distro.filename in os.listdir(self.path):

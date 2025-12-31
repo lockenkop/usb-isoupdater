@@ -18,9 +18,12 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "inquirerpy>=0.3.4",
     "ipython>=8.18.1",
     "psutil>=7.2.0",
     "pyudev>=0.24.4",
+    "tqdm>=4.67.1",
 ]
 
 [project.urls]

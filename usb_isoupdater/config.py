@@ -8,9 +8,9 @@ Debian = amd64, arm64, armel, i386, mips64el, mipsel
 """
 
 import configparser
-import pyudev
 from pathlib import Path
 
+import pyudev
 
 CONFIG_FILENAME = Path(".iso-usbupdater.ini")
 
@@ -25,19 +25,26 @@ class ConfigManager:
         """Loads configuration from the iso-usbupdater.ini file."""
         self.config.read(self.config_file)
 
-    def get_usb_device(self) -> str | None:
+    def get_usb_device(self) -> dict[str, str] | None:
         """Returns the USB device path from the configuration, if set."""
+
         if "USB" in self.config and "DevicePath" in self.config["USB"]:
-            return self.config["USB"]["DevicePath"]
-        return None
+            usb_device = {
+                "devicepath": self.config["USB"]["Devicepath"],
+                "vendorid": self.config["USB"]["VendorID"],
+                "modelid": self.config["USB"]["ModelID"],
+            }
+        else:
+            usb_device = None
+        return usb_device
 
     def update_usb_device(self, device: pyudev.Device):
         """Updates the USB device path in the configuration."""
         if "USB" not in self.config:
             self.config["USB"] = {}
-        self.config["USB"]["DevicePath"] = device.device_node
-        self.config["USB"]["VendorID"] = device.get("ID_VENDOR_ID", "")
-        self.config["USB"]["ModelID"] = device.get("ID_MODEL_ID", "")
+        self.config["USB"]["devicepath"] = device.device_node if device.device_node else "unknown"
+        self.config["USB"]["vendorid"] = device.get("ID_VENDOR_ID", "")
+        self.config["USB"]["modelid"] = device.get("ID_MODEL_ID", "")
         self.save_config()
 
     def get_distros(self) -> dict[str, list[str]]:

@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+from typing import ClassVar
 
 import requests
 from distro_sources.distro_base import Distro
@@ -23,23 +24,23 @@ def distro_subclass(name):
 
 @distro_subclass("Ubuntu")
 class Ubuntu(Distro):
-    name = "Ubuntu"
-    config_key = name.lower().replace(" ", "_")
-    download_url = "https://releases.ubuntu.com/{}/ubuntu-{}-desktop-{}.iso"
-    checksum_url = "https://releases.ubuntu.com/{}/SHA256SUMS"
-    filename = "ubuntu-{}-desktop-{}.iso"
-    architecture = ["amd64", "arm64", "armel", "i386", "mips64el", "mipsel"]
+    name: ClassVar[str] = "Ubuntu"
+    config_key: ClassVar[str] = name.lower().replace(" ", "_")
+    architecture: ClassVar[list[str]] = ["amd64", "arm64", "armel", "i386", "mips64el", "mipsel"]
 
     def __init__(self, architecture):
         super().__init__(architecture)
         self.version = self.get_release()
-        self.filename = self.filename.format(self.version, architecture)
-        self.download_url = self.download_url.format(self.version, self.version, architecture)
-        self.checksum_url = self.checksum_url.format(self.version)
+        download_url = "https://releases.ubuntu.com/{}/ubuntu-{}-desktop-{}.iso"
+        checksum_url = "https://releases.ubuntu.com/{}/SHA256SUMS"
+        filename = "ubuntu-{}-desktop-{}.iso"
+        self.filename = filename.format(self.version, architecture)
+        self.download_url = download_url.format(self.version, self.version, architecture)
+        self.checksum_url = checksum_url.format(self.version)
 
     def get_release(self):
         """Get the latest release version of Ubuntu."""
-        response = requests.get("https://api.launchpad.net/devel/ubuntu/series")
+        response = requests.get("https://api.launchpad.net/devel/ubuntu/series", timeout=10)
         ubuntu_series = json.loads(response.text)
         for entry in ubuntu_series["entries"]:
             if entry["status"] == "Current Stable Release":
@@ -48,30 +49,30 @@ class Ubuntu(Distro):
 
 @distro_subclass("Arch Linux")
 class Arch(Distro):
-    name = "Arch Linux"
-    config_key = name.lower().replace(" ", "_")
-    download_url = "https://geo.mirror.pkgbuild.com/iso/latest/archlinux-x86_64.iso"
-    checksum_url = "https://geo.mirror.pkgbuild.com/iso/latest/sha256sums.txt"
-    filename = "archlinux-{}.iso"
-    architectures = ["x86_64"]
+    name: ClassVar[str] = "Arch Linux"
+    config_key: ClassVar[str] = name.lower().replace(" ", "_")
+    download_url: ClassVar[str] = "https://geo.mirror.pkgbuild.com/iso/latest/archlinux-x86_64.iso"
+    checksum_url: ClassVar[str] = "https://geo.mirror.pkgbuild.com/iso/latest/sha256sums.txt"
+    architectures: ClassVar[list[str]] = ["x86_64"]
 
     def __init__(self, architecture):
         super().__init__(architecture)
-        self.filename = self.filename.format(architecture)
+        filename = "archlinux-{}.iso"
+        self.filename = filename.format(architecture)
 
 
 @distro_subclass("Arch Linux Test")
 class ArchTest(Distro):
-    name = "Arch Linux Test"
-    config_key = name.lower().replace(" ", "_")
-    download_url = "https://geo.mirror.pkgbuild.com/iso/latest/archlinux-x86_64.iso"
-    checksum_url = "https://geo.mirror.pkgbuild.com/iso/latest/sha256sums.txt"
-    filename = "archlinux-{}.iso"
-    architectures = ["x86_64"]
+    name: ClassVar[str] = "Arch Linux Test"
+    config_key: ClassVar[str] = name.lower().replace(" ", "_")
+    download_url: ClassVar[str] = "https://geo.mirror.pkgbuild.com/iso/latest/archlinux-x86_64.iso"
+    checksum_url: ClassVar[str] = "https://geo.mirror.pkgbuild.com/iso/latest/sha256sums.txt"
+    architectures: ClassVar[list[str]] = ["x86_64"]
 
     def __init__(self, architecture):
         super().__init__(architecture)
-        self.filename = self.filename.format(architecture)
+        filename = "archlinux-{}.iso"
+        self.filename = filename.format(architecture)
 
     def download(self, path="."):
         print("Testing Class, skipping download using present file")
@@ -80,12 +81,10 @@ class ArchTest(Distro):
 
 @distro_subclass("Debian")
 class Debian(Distro):
-    name = "Debian"
-    config_key = name.lower().replace(" ", "_")
-    download_url = "https://cdimage.debian.org/debian-cd/current/{}/iso-cd/debian-{}-{}-netinst.iso"
-    checksum_url = "https://cdimage.debian.org/debian-cd/current/{}/iso-cd/SHA256SUMS"
-    filename = "debian-{}-{}-netinst.iso"
-    architectures = [
+    name: ClassVar[str] = "Debian"
+    config_key: ClassVar[str] = name.lower().replace(" ", "_")
+
+    architectures: ClassVar[list[str]] = [
         "amd64",
         "arm64",
         "armel",
@@ -100,14 +99,17 @@ class Debian(Distro):
     def __init__(self, architecture):
         super().__init__(architecture)
         self.version = self.get_release()
-        self.filename = self.filename.format(self.version, architecture)
-        self.download_url = self.download_url.format(architecture, self.version, architecture)
-        self.checksum_url = self.checksum_url.format(architecture)
+        download_url = "https://cdimage.debian.org/debian-cd/current/{}/iso-cd/debian-{}-{}-netinst.iso"
+        checksum_url = "https://cdimage.debian.org/debian-cd/current/{}/iso-cd/SHA256SUMS"
+        filename = "debian-{}-{}-netinst.iso"
+        self.filename = filename.format(self.version, architecture)
+        self.download_url = download_url.format(architecture, self.version, architecture)
+        self.checksum_url = checksum_url.format(architecture)
 
     def get_release(self):
         """Get the latest release version of Debian."""
         realese_page = "/".join(self.download_url.split("/")[:-1]).format(self.arch)
-        response = requests.get(realese_page)
+        response = requests.get(realese_page, timeout=10)
         version_pattern = r"debian-(\d+\.\d+\.\d+)-"
         version_matches = re.findall(version_pattern, response.text)
         if len(set(version_matches)) == 1:
@@ -119,21 +121,22 @@ class Debian(Distro):
 class PopOS(Distro):
     name = "PopOS"
     config_key = name.lower().replace(" ", "_")
-    download_url = "https://system76.com/pop/download/"
-    checksum_url = "https://system76.com/pop/download/"
-    filename = ""
+
     architectures = ["amd64"]
 
     def __init__(self, architecture):
         super().__init__(architecture)
+        self.download_url = "https://system76.com/pop/download/"
+        self.checksum_url = "https://system76.com/pop/download/"
+        self.filename = ""
         self.download_url, checksum = self.get_download_url_and_checksum()
         self.filename = self.download_url.split("/")[-1]
         self.checksums = {self.filename: checksum}
 
-    def get_download_url_and_checksum(self):
+    def get_download_url_and_checksum(self) -> tuple[str, str]:
         from bs4 import BeautifulSoup
 
-        response = requests.get(self.download_url)
+        response = requests.get(self.download_url, timeout=10)
         if response.status_code == 200:
             soup = BeautifulSoup(response.content, "html.parser")
             download_button = soup.find("a", id="pop-download-0001c28b-4111-4add-b736-62d4797a12ce")
@@ -147,6 +150,5 @@ class PopOS(Distro):
             else:
                 logger.error(f"Failed to get download link for {self.name}")
             if download_link and sha256sum:
-                return download_link, sha256sum
-            else:
-                return False
+                return str(download_link), str(sha256sum)
+        raise ValueError(f"Failed to get download URL and checksum for {self.name}")
