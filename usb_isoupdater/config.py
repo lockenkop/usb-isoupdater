@@ -12,6 +12,9 @@ from pathlib import Path
 
 import pyudev
 
+from distro_sources.distro_base import Distro
+from distro_sources.http_distros import DISTROS
+
 CONFIG_FILENAME = Path(".iso-usbupdater.ini")
 
 
@@ -47,15 +50,22 @@ class ConfigManager:
         self.config["USB"]["modelid"] = device.get("ID_MODEL_ID", "")
         self.save_config()
 
-    def get_distros(self) -> dict[str, list[str]]:
+    def get_distros(self) -> list[Distro]:
         """
-        Returns available distros and their architectures.
+        Returns configured distros and their architectures.
         Example output: {'Ubuntu': ['amd64', 'arm64'], 'Arch Linux': ['amd64']}
         """
-        distros = {}
-        if "Distros" in self.config:
-            for distro, archs in self.config["Distros"].items():
-                distros[distro] = [arch.strip() for arch in archs.split(",")]
+        distros = []
+        for key in self.config.keys():
+            if key == "USB":
+                continue
+            config_entry = self.config[key]
+            if "name" in config_entry and "version" in config_entry and "architectures" in config_entry:
+                # valid config found
+                for architecture in config_entry["architectures"].split(","):
+                    distro = DISTROS[config_entry["name"]](architecture, config_entry["version"])
+                    distros.append(distro)
+
         return distros
 
     def update_distro(self, distro_config_key: str, architectures: list[str]):

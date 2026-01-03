@@ -31,20 +31,25 @@ class Distro:
     checksum_url = ""
     filename = ""
     architectures: list[str]
+    version = ""
 
-    def __init__(self, architecture):
+    def __init__(self, architecture, version):
         if architecture not in self.architectures:
             raise NotImplementedError
         self.arch = architecture
+        self.version = version
         self.checksums = {}
 
     def download(self, path):
-        """Download the ISO file."""
+        """Download the ISO file"""
         filepath = os.path.join(path, self.filename)
         downloader = DownloadWithProgress(self.download_url, filepath)
         downloader.download()
 
     def get_checksums(self):
+        """
+        get the checksum for the ISO file
+        """
         r = requests.get(self.checksum_url, timeout=10)
         lines = r.text.strip().split("\n")
         for line in lines:

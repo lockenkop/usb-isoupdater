@@ -96,20 +96,25 @@ class Debian(Distro):
         "s390x",
     ]
 
-    def __init__(self, architecture):
-        super().__init__(architecture)
-        self.version = self.get_release()
-        download_url = "https://cdimage.debian.org/debian-cd/current/{}/iso-cd/debian-{}-{}-netinst.iso"
-        checksum_url = "https://cdimage.debian.org/debian-cd/current/{}/iso-cd/SHA256SUMS"
-        filename = "debian-{}-{}-netinst.iso"
-        self.filename = filename.format(self.version, architecture)
-        self.download_url = download_url.format(architecture, self.version, architecture)
-        self.checksum_url = checksum_url.format(architecture)
+    def __init__(self, architecture, version):
+        super().__init__(architecture, version)
 
-    def get_release(self):
+        self.download_url = "https://cdimage.debian.org/debian-cd/current/{}/iso-cd/debian-{}-{}-netinst.iso"
+        self.checksum_url = "https://cdimage.debian.org/debian-cd/current/{}/iso-cd/SHA256SUMS"
+        filename = "debian-{}-{}-netinst.iso"
+
+        if version == "latest":
+            self.version = self.get_latest()
+        else:
+            self.version = version
+        self.download_url = self.download_url.format(architecture, self.version, architecture)
+        self.checksum_url = self.checksum_url.format(architecture)
+        self.filename = filename.format(self.version, architecture)
+
+    def get_latest(self) -> str:
         """Get the latest release version of Debian."""
-        realese_page = "/".join(self.download_url.split("/")[:-1]).format(self.arch)
-        response = requests.get(realese_page, timeout=10)
+        release_page = "/".join(self.download_url.split("/")[:-1]).format(self.arch)
+        response = requests.get(release_page, timeout=10)
         version_pattern = r"debian-(\d+\.\d+\.\d+)-"
         version_matches = re.findall(version_pattern, response.text)
         if len(set(version_matches)) == 1:
